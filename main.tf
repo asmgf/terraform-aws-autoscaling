@@ -111,13 +111,5 @@ resource "aws_autoscaling_group" "main" {
 
   lifecycle {
     create_before_destroy = true
-
-    ignore_changes = [
-      "launch_configuration",
-      "max_size",
-      "min_size",
-      "health_check_grace_period",
-      "health_check_type",
-    ]
   }
 }
