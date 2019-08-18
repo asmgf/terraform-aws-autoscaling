@@ -4,7 +4,7 @@ locals {
 }
 
 module "random_lc" {
-  source = "github.com/traveloka/terraform-aws-resource-naming.git?ref=v0.6.0"
+  source = "github.com/traveloka/terraform-aws-resource-naming.git?ref=v0.17.0"
 
   name_prefix   = "${var.service_name}-${var.cluster_role}"
   resource_type = "launch_configuration"
@@ -27,12 +27,12 @@ resource "aws_launch_configuration" "main" {
   instance_type        = "${var.lc_instance_type}"
   iam_instance_profile = "${var.lc_instance_profile}"
   key_name             = "${var.lc_key_name}"
-  security_groups      = ["${var.lc_security_groups}"]
+  security_groups      = "${var.lc_security_groups}"
   user_data            = "${var.lc_user_data}"
   enable_monitoring    = "${var.lc_monitoring}"
   ebs_optimized        = "${var.lc_ebs_optimized}"
 
-  root_block_device = {
+  root_block_device {
     volume_size           = "${var.volume_size}"
     volume_type           = "${var.volume_type}"
     delete_on_termination = "${var.delete_on_termination}"
@@ -51,11 +51,11 @@ resource "aws_autoscaling_group" "main" {
   launch_configuration      = "${aws_launch_configuration.main.name}"
   health_check_grace_period = "${var.asg_health_check_grace_period}"
   health_check_type         = "${var.asg_health_check_type}"
-  vpc_zone_identifier       = ["${var.asg_vpc_zone_identifier}"]
-  target_group_arns         = ["${var.asg_lb_target_group_arns}"]
-  termination_policies      = ["${var.asg_termination_policies}"]
+  vpc_zone_identifier       = "${var.asg_vpc_zone_identifier}"
+  target_group_arns         = "${var.asg_lb_target_group_arns}"
+  termination_policies      = "${var.asg_termination_policies}"
 
-  tags = [
+  tags = concat([
     {
       key                 = "Name"
       value               = "${aws_launch_configuration.main.name}"
@@ -95,12 +95,8 @@ resource "aws_autoscaling_group" "main" {
       key                 = "ManagedBy"
       value               = "terraform"
       propagate_at_launch = true
-    },
-  ]
-
-  tags = [
-    "${var.asg_tags}",
-  ]
+    }
+  ], var.asg_tags)
 
   placement_group           = "${var.asg_placement_group}"
   metrics_granularity       = "${var.asg_metrics_granularity}"
@@ -111,13 +107,5 @@ resource "aws_autoscaling_group" "main" {
 
   lifecycle {
     create_before_destroy = true
-
-    ignore_changes = [
-      "launch_configuration",
-      "max_size",
-      "min_size",
-      "health_check_grace_period",
-      "health_check_type",
-    ]
   }
 }
