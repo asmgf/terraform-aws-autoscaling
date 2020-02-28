@@ -53,6 +53,7 @@ resource "aws_autoscaling_group" "main" {
   health_check_type         = "${var.asg_health_check_type}"
   vpc_zone_identifier       = "${var.asg_vpc_zone_identifier}"
   target_group_arns         = "${var.asg_lb_target_group_arns}"
+  load_balancers            = "${var.asg_clb_names}"
   termination_policies      = "${var.asg_termination_policies}"
 
   tags = concat([
